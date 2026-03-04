@@ -33,40 +33,33 @@ export default function InvoicePreview() {
       // Wait a bit for any fonts/images to load
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Temporarily remove overflow to capture full height accurately
-      const scrollContainer = element.closest('.overflow-auto') as HTMLElement;
-      const originalOverflow = scrollContainer ? scrollContainer.style.overflow : '';
-      const originalHeight = scrollContainer ? scrollContainer.style.height : '';
-      const originalWidth = element.style.width;
-      const originalMaxWidth = element.style.maxWidth;
-      
-      if (scrollContainer) {
-        scrollContainer.style.overflow = 'visible';
-        scrollContainer.style.height = 'auto';
-        scrollContainer.scrollTop = 0;
-      }
-      
-      // Force A4 width for consistent PDF layout regardless of screen size
-      element.style.width = '794px';
-      element.style.maxWidth = '794px';
-
       const canvas = await html2canvas(element, {
         backgroundColor: theme.backgroundColor,
         scale: 2,
         useCORS: true,
         logging: false,
-        scrollY: 0,
-        scrollX: 0,
         windowWidth: 1024,
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.querySelector('[data-invoice-container="true"]') as HTMLElement;
+          if (clonedElement) {
+            clonedElement.style.width = '794px';
+            clonedElement.style.maxWidth = '794px';
+            clonedElement.style.padding = '48px'; // Match md:p-12
+            clonedElement.style.margin = '0';
+            clonedElement.style.transform = 'none';
+            
+            // Ensure the parent container doesn't restrict the width
+            const parent = clonedElement.parentElement;
+            if (parent) {
+              parent.style.width = 'auto';
+              parent.style.minWidth = '794px';
+              parent.style.padding = '0';
+              parent.style.margin = '0';
+              parent.style.display = 'block';
+            }
+          }
+        }
       });
-      
-      // Restore original styles
-      element.style.width = originalWidth;
-      element.style.maxWidth = originalMaxWidth;
-      if (scrollContainer) {
-        scrollContainer.style.overflow = originalOverflow;
-        scrollContainer.style.height = originalHeight;
-      }
       
       const dataUrl = canvas.toDataURL('image/png');
       
@@ -206,14 +199,14 @@ export default function InvoicePreview() {
 
           {/* Items Table */}
           <div className="mb-12">
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left table-fixed">
               <thead>
                 <tr className="border-b-2" style={{ borderColor: theme.accentColor, color: theme.textColor, opacity: 0.8 }}>
-                  <th className="pb-3 font-semibold">Description</th>
-                  <th className="pb-3 font-semibold text-right">Qty</th>
-                  <th className="pb-3 font-semibold text-right">Price</th>
-                  <th className="pb-3 font-semibold text-right">Tax</th>
-                  <th className="pb-3 font-semibold text-right">Amount</th>
+                  <th className="pb-3 font-semibold w-1/2">Description</th>
+                  <th className="pb-3 font-semibold text-right w-1/12">Qty</th>
+                  <th className="pb-3 font-semibold text-right w-1/6">Price</th>
+                  <th className="pb-3 font-semibold text-right w-1/12">Tax</th>
+                  <th className="pb-3 font-semibold text-right w-1/6">Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y" style={{ borderColor: `${theme.textColor}20` }}>

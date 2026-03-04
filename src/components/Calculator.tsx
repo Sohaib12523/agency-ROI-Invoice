@@ -79,21 +79,31 @@ export default function Calculator() {
 
   return (
     <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-white">Business Inputs</h2>
-        <div className="flex items-center gap-2 bg-slate-800/50 p-1 rounded-lg border border-slate-700">
-          <button
-            onClick={() => store.setIsOptimistic(false)}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${!store.isOptimistic ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"}`}
-          >
-            Conservative
-          </button>
-          <button
-            onClick={() => store.setIsOptimistic(true)}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${store.isOptimistic ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"}`}
-          >
-            Optimistic
-          </button>
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-white mb-4">Business Inputs</h2>
+        <div className="flex items-center gap-2 bg-slate-800/50 p-1 rounded-lg border border-slate-700 w-fit">
+          <div className="relative group/tooltip">
+            <button
+              onClick={() => store.setIsOptimistic(false)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${!store.isOptimistic ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"}`}
+            >
+              Conservative
+            </button>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 text-xs text-slate-300 rounded border border-slate-700 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-10 text-center shadow-xl">
+              Uses lower estimates for conversion and traffic growth to provide a safer baseline ROI.
+            </div>
+          </div>
+          <div className="relative group/tooltip">
+            <button
+              onClick={() => store.setIsOptimistic(true)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${store.isOptimistic ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"}`}
+            >
+              Optimistic
+            </button>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 text-xs text-slate-300 rounded border border-slate-700 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-10 text-center shadow-xl">
+              Uses higher estimates for conversion and traffic growth to show potential maximum ROI.
+            </div>
+          </div>
         </div>
       </div>
 
