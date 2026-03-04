@@ -33,30 +33,40 @@ export default function InvoicePreview() {
       // Wait a bit for any fonts/images to load
       await new Promise(resolve => setTimeout(resolve, 500));
 
+      // Temporarily remove overflow to capture full height accurately
+      const scrollContainer = element.closest('.overflow-auto') as HTMLElement;
+      const originalOverflow = scrollContainer ? scrollContainer.style.overflow : '';
+      const originalHeight = scrollContainer ? scrollContainer.style.height : '';
+      const originalWidth = element.style.width;
+      const originalMaxWidth = element.style.maxWidth;
+      
+      if (scrollContainer) {
+        scrollContainer.style.overflow = 'visible';
+        scrollContainer.style.height = 'auto';
+        scrollContainer.scrollTop = 0;
+      }
+      
+      // Force A4 width for consistent PDF layout regardless of screen size
+      element.style.width = '794px';
+      element.style.maxWidth = '794px';
+
       const canvas = await html2canvas(element, {
         backgroundColor: theme.backgroundColor,
         scale: 2,
         useCORS: true,
         logging: false,
-        width: 794,
-        windowWidth: 794,
-        onclone: (clonedDoc) => {
-          const clonedElement = clonedDoc.querySelector('[data-invoice-container="true"]') as HTMLElement;
-          if (clonedElement) {
-            clonedDoc.body.appendChild(clonedElement);
-            clonedElement.style.position = 'absolute';
-            clonedElement.style.top = '0';
-            clonedElement.style.left = '0';
-            clonedElement.style.width = '794px';
-            clonedElement.style.minWidth = '794px';
-            clonedElement.style.maxWidth = '794px';
-            clonedElement.style.minHeight = '1123px';
-            clonedElement.style.height = 'auto';
-            clonedElement.style.margin = '0';
-            clonedElement.style.transform = 'none';
-          }
-        }
+        scrollY: 0,
+        scrollX: 0,
+        windowWidth: 1024,
       });
+      
+      // Restore original styles
+      element.style.width = originalWidth;
+      element.style.maxWidth = originalMaxWidth;
+      if (scrollContainer) {
+        scrollContainer.style.overflow = originalOverflow;
+        scrollContainer.style.height = originalHeight;
+      }
       
       const dataUrl = canvas.toDataURL('image/png');
       
@@ -145,7 +155,7 @@ export default function InvoicePreview() {
             ref={invoiceRef}
             data-invoice-container="true"
             className="p-8 md:p-12 min-h-[1123px] w-full box-border bg-white shadow-2xl print:shadow-none shrink-0 relative"
-            style={{ backgroundColor: theme.backgroundColor, color: theme.textColor }}
+            style={{ backgroundColor: theme.backgroundColor, color: theme.textColor, fontFamily: '"Inter", sans-serif' }}
           >
           {/* Header */}
           <div className="flex justify-between items-start mb-12">
