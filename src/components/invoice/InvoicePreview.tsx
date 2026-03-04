@@ -30,9 +30,7 @@ export default function InvoicePreview() {
       setIsGenerating(true);
       const element = invoiceRef.current;
       
-      // Wait for fonts to load to ensure accurate text rendering
-      await document.fonts.ready;
-      // Wait a bit for any images to load
+      // Wait a bit for any fonts/images to load
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const canvas = await html2canvas(element, {
@@ -40,33 +38,30 @@ export default function InvoicePreview() {
         scale: 2,
         useCORS: true,
         logging: false,
-        scrollY: 0,
-        scrollX: 0,
         windowWidth: 1024,
-        windowHeight: element.scrollHeight + 100, // Add some padding to ensure nothing is cut off
         onclone: (clonedDoc) => {
           const clonedElement = clonedDoc.querySelector('[data-invoice-container="true"]') as HTMLElement;
           if (clonedElement) {
-            // Move the element directly to the body to escape any parent container constraints or scroll clipping
-            clonedDoc.body.innerHTML = '';
-            clonedDoc.body.style.margin = '0';
-            clonedDoc.body.style.padding = '0';
-            clonedDoc.body.appendChild(clonedElement);
-            
             clonedElement.style.width = '794px';
             clonedElement.style.maxWidth = '794px';
             clonedElement.style.padding = '48px'; // Match md:p-12
             clonedElement.style.margin = '0';
             clonedElement.style.transform = 'none';
-            clonedElement.style.position = 'relative';
-            clonedElement.style.overflow = 'visible';
-            clonedElement.style.height = 'auto';
-            clonedElement.style.minHeight = '1123px'; // A4 height at 96 DPI
+            
+            // Ensure the parent container doesn't restrict the width
+            const parent = clonedElement.parentElement;
+            if (parent) {
+              parent.style.width = 'auto';
+              parent.style.minWidth = '794px';
+              parent.style.padding = '0';
+              parent.style.margin = '0';
+              parent.style.display = 'block';
+            }
           }
         }
       });
       
-      const dataUrl = canvas.toDataURL('image/png', 1.0);
+      const dataUrl = canvas.toDataURL('image/png');
       
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -148,11 +143,11 @@ export default function InvoicePreview() {
       </div>
 
       <div className="flex-1 bg-slate-900/30 rounded-xl border border-white/10 overflow-auto custom-scrollbar py-4 md:py-8">
-        <div className="w-full px-[40px] flex justify-center min-w-fit">
+        <div className="w-full px-[40px] flex justify-center">
           <div 
             ref={invoiceRef}
             data-invoice-container="true"
-            className="p-[48px] min-h-[1123px] w-[794px] box-border bg-white shadow-2xl print:shadow-none shrink-0 relative"
+            className="p-8 md:p-12 min-h-[1123px] w-full box-border bg-white shadow-2xl print:shadow-none shrink-0 relative"
             style={{ backgroundColor: theme.backgroundColor, color: theme.textColor, fontFamily: '"Inter", sans-serif' }}
           >
           {/* Header */}
@@ -165,7 +160,7 @@ export default function InvoicePreview() {
                   {seller.companyName || 'Your Company'}
                 </div>
               )}
-              <div className="text-sm space-y-1 break-words" style={{ color: theme.textColor, opacity: 0.7 }}>
+              <div className="text-sm space-y-1" style={{ color: theme.textColor, opacity: 0.7 }}>
                 <p>{seller.address}</p>
                 <p>{seller.email}</p>
                 <p>{seller.phone}</p>
@@ -176,15 +171,15 @@ export default function InvoicePreview() {
               <h1 className="text-4xl font-light mb-4 uppercase tracking-widest" style={{ color: theme.textColor, opacity: 0.5 }}>Invoice</h1>
               <div className="text-sm space-y-2">
                 <div className="flex justify-end gap-4">
-                  <span className="w-24 text-right shrink-0" style={{ color: theme.textColor, opacity: 0.7 }}>Invoice No:</span>
-                  <span className="font-medium w-32 text-left break-all" style={{ color: theme.textColor }}>{details.invoiceNumber}</span>
+                  <span className="w-24 text-right" style={{ color: theme.textColor, opacity: 0.7 }}>Invoice No:</span>
+                  <span className="font-medium w-32 text-left" style={{ color: theme.textColor }}>{details.invoiceNumber}</span>
                 </div>
                 <div className="flex justify-end gap-4">
-                  <span className="w-24 text-right shrink-0" style={{ color: theme.textColor, opacity: 0.7 }}>Issue Date:</span>
+                  <span className="w-24 text-right" style={{ color: theme.textColor, opacity: 0.7 }}>Issue Date:</span>
                   <span className="font-medium w-32 text-left" style={{ color: theme.textColor }}>{details.issueDate}</span>
                 </div>
                 <div className="flex justify-end gap-4">
-                  <span className="w-24 text-right shrink-0" style={{ color: theme.textColor, opacity: 0.7 }}>Due Date:</span>
+                  <span className="w-24 text-right" style={{ color: theme.textColor, opacity: 0.7 }}>Due Date:</span>
                   <span className="font-medium w-32 text-left" style={{ color: theme.textColor }}>{details.dueDate}</span>
                 </div>
               </div>
@@ -194,7 +189,7 @@ export default function InvoicePreview() {
           {/* Bill To */}
           <div className="mb-12">
             <h3 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: theme.accentColor }}>Bill To</h3>
-            <div className="text-sm space-y-1 break-words" style={{ color: theme.textColor, opacity: 0.8 }}>
+            <div className="text-sm space-y-1" style={{ color: theme.textColor, opacity: 0.8 }}>
               <p className="font-semibold text-lg" style={{ color: theme.textColor }}>{client.clientName || 'Client Name'}</p>
               <p>{client.companyName}</p>
               <p>{client.address}</p>
@@ -217,16 +212,16 @@ export default function InvoicePreview() {
               <tbody className="divide-y" style={{ borderColor: `${theme.textColor}20` }}>
                 {items.map((item) => (
                   <tr key={item.id} style={{ borderColor: `${theme.textColor}20` }}>
-                    <td className="py-4 pr-4 break-words">
+                    <td className="py-4 pr-4">
                       <p className="font-medium" style={{ color: theme.textColor }}>{item.name || 'Item Name'}</p>
                       {item.description && (
-                        <p className="mt-1 text-xs leading-relaxed whitespace-pre-wrap" style={{ color: theme.textColor, opacity: 0.7 }}>{item.description}</p>
+                        <p className="mt-1 text-xs leading-relaxed" style={{ color: theme.textColor, opacity: 0.7 }}>{item.description}</p>
                       )}
                     </td>
-                    <td className="py-4 text-right break-words" style={{ color: theme.textColor, opacity: 0.9 }}>{item.quantity}</td>
-                    <td className="py-4 text-right break-words" style={{ color: theme.textColor, opacity: 0.9 }}>{formatCurrency(item.unitPrice)}</td>
-                    <td className="py-4 text-right break-words" style={{ color: theme.textColor, opacity: 0.9 }}>{item.taxRate}%</td>
-                    <td className="py-4 text-right font-medium break-words" style={{ color: theme.textColor }}>
+                    <td className="py-4 text-right" style={{ color: theme.textColor, opacity: 0.9 }}>{item.quantity}</td>
+                    <td className="py-4 text-right" style={{ color: theme.textColor, opacity: 0.9 }}>{formatCurrency(item.unitPrice)}</td>
+                    <td className="py-4 text-right" style={{ color: theme.textColor, opacity: 0.9 }}>{item.taxRate}%</td>
+                    <td className="py-4 text-right font-medium" style={{ color: theme.textColor }}>
                       {formatCurrency(item.quantity * item.unitPrice)}
                     </td>
                   </tr>
@@ -275,7 +270,7 @@ export default function InvoicePreview() {
           {details.notes && (
             <div className="pt-8 border-t" style={{ borderColor: `${theme.textColor}20` }}>
               <h3 className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: theme.accentColor }}>Notes</h3>
-              <p className="text-sm whitespace-pre-wrap break-words" style={{ color: theme.textColor, opacity: 0.8 }}>{details.notes}</p>
+              <p className="text-sm whitespace-pre-wrap" style={{ color: theme.textColor, opacity: 0.8 }}>{details.notes}</p>
             </div>
           )}
           </div>
