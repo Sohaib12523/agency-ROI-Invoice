@@ -147,8 +147,8 @@ export default function InvoicePreview() {
         </div>
       </div>
 
-      <div className="flex-1 bg-slate-900/30 rounded-xl border border-white/10 overflow-auto custom-scrollbar">
-        <div className="min-w-max p-4 md:p-8 flex justify-center">
+      <div className="flex-1 bg-slate-900/30 rounded-xl border border-white/10 overflow-auto custom-scrollbar py-4 md:py-8">
+        <div className="w-full px-[40px] flex justify-center min-w-fit">
           <div 
             ref={invoiceRef}
             data-invoice-container="true"
